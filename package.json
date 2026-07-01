@@ -1,0 +1,15 @@
+{
+  "name": "manicure-sistema",
+  "version": "1.0.0",
+  "description": "Sistema de agendamento com backend para multi-dispositivos",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "dependencies": {
+    "@upstash/redis": "^1.38.0",
+    "cors": "^2.8.5",
+    "express": "^4.18.4"
+  }
+}

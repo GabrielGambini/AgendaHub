@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/site.webmanifest">
+<title>AgendaHub</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #f8fafc;
+    --surface: #ffffff;
+    --surface-alt: #f1f5f9;
+    --text: #0f172a;
+    --muted: #64748b;
+    --border: #e2e8f0;
+    --primary: #475569;
+    --primary-hover: #334155;
+    --shadow: 0 12px 35px rgba(15, 23, 42, 0.06);
+  }
+
+  :root[data-theme="dark"] {
+    --bg: #0f172a;
+    --surface: #111827;
+    --surface-alt: #1f2937;
+    --text: #f8fafc;
+    --muted: #cbd5e1;
+    --border: #334155;
+    --primary: #60a5fa;
+    --primary-hover: #93c5fd;
+    --shadow: 0 12px 35px rgba(2, 6, 23, 0.45);
+  }
+
+  body { font-family: Inter, 'Segoe UI', Roboto, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+  .page { max-width: 520px; margin: 0 auto; padding: 2rem 1rem 4rem; }
+
+  .header { text-align: center; margin-bottom: 2rem; }
+  .header .emoji { font-size: 2.5rem; }
+  .brand-logo { display: block; width: auto; max-width: 240px; max-height: 180px; margin: 0 auto 1rem; }
+  .header h1 { font-size: 22px; font-weight: 600; margin-top: 0.5rem; color: var(--text); }
+  .header p { font-size: 14px; color: var(--muted); margin-top: 4px; }
+
+  .card { background: var(--surface); border: 0.5px solid var(--border); border-radius: 16px; padding: 1.25rem; margin-bottom: 1rem; box-shadow: var(--shadow); }
+  .section-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--primary); margin-bottom: 0.75rem; }
+
+  label { font-size: 13px; color: var(--muted); display: block; margin-bottom: 4px; margin-top: 12px; }
+  input, select { width: 100%; padding: 9px 12px; border: 0.5px solid var(--border); border-radius: 10px; font-size: 14px; background: var(--surface-alt); color: var(--text); font-family: inherit; }
+  input:focus, select:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(71,85,105,0.12); }
+
+  .service-grid { display: flex; flex-direction: column; gap: 8px; }
+  .service-opt { display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; border: 0.5px solid var(--border); border-radius: 12px; cursor: pointer; background: var(--surface); transition: all 0.12s; }
+  .service-opt:hover { border-color: var(--primary); transform: translateY(-1px); }
+  .service-opt.selected { background: var(--primary); border-color: var(--primary); color: #fff; }
+  .service-opt .svc-name { font-size: 14px; font-weight: 500; }
+  .service-opt .svc-info { font-size: 12px; opacity: 0.75; }
+  .service-opt.selected .svc-info { opacity: 0.85; }
+
+  .time-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+  .time-opt { padding: 8px 4px; text-align: center; border: 0.5px solid var(--border); border-radius: 8px; font-size: 13px; cursor: pointer; background: var(--surface); transition: all 0.12s; }
+  .time-opt:hover { border-color: var(--primary); }
+  .time-opt.selected { background: var(--primary); color: #fff; border-color: var(--primary); }
+  .time-opt.taken { opacity: 0.3; pointer-events: none; background: var(--surface-alt); text-decoration: line-through; }
+
+  .btn { width: 100%; padding: 12px; border-radius: 12px; font-size: 15px; font-weight: 600; cursor: pointer; border: none; font-family: inherit; transition: all 0.15s; margin-top: 1rem; }
+  .btn-primary { background: var(--primary); color: #fff; }
+  .btn-primary:hover { background: var(--primary-hover); }
+  .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  .success { text-align: center; padding: 3rem 1rem; }
+  .success .emoji-big { font-size: 3.5rem; }
+  .success h2 { font-size: 20px; font-weight: 600; margin: 1rem 0 0.5rem; }
+  .success p { font-size: 14px; color: #64748b; line-height: 1.6; }
+  .success .detail { background: var(--surface); border: 0.5px solid var(--border); border-radius: 12px; padding: 1rem 1.25rem; margin: 1.5rem 0; text-align: left; }
+  .success .detail p { color: var(--text); font-size: 14px; margin-bottom: 6px; }
+  .success .detail p:last-child { margin-bottom: 0; }
+  .btn-outline { background: transparent; color: var(--primary); border: 1.5px solid var(--primary); margin-top: 0.75rem; }
+  .btn-outline:hover { background: rgba(71,85,105,0.08); }
+
+  .theme-toggle { position: fixed; top: 16px; right: 16px; z-index: 20; border: none; background: var(--surface); color: var(--text); border-radius: 999px; padding: 8px 10px; box-shadow: var(--shadow); cursor: pointer; }
+  .hidden { display: none; }
+  .fade-in { animation: fadeIn 0.2s ease; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+</style>
+</head>
+<body>
+<button class="theme-toggle" onclick="toggleTheme()" id="themeToggle">🌙</button>
+<div class="page" id="main">
+  <!-- header -->
+  <div class="header">
+    <img src="/agenda-logo.png" alt="AgendaHub" class="brand-logo" />
+    <h1>AgendaHub</h1>
+    <p>Escolha o serviço, data e horário de sua preferência</p>
+  </div>
+
+  <!-- step 1: serviço -->
+  <div class="card fade-in" id="step-service">
+    <div class="section-label">1 — Serviço</div>
+    <div class="service-grid" id="service-list"></div>
+  </div>
+
+  <!-- step 2: data -->
+  <div class="card fade-in hidden" id="step-date">
+    <div class="section-label">2 — Data</div>
+    <input type="date" id="input-date" />
+  </div>
+
+  <!-- step 3: horário -->
+  <div class="card fade-in hidden" id="step-time">
+    <div class="section-label">3 — Horário</div>
+    <div class="time-grid" id="time-list"></div>
+  </div>
+
+  <!-- step 4: dados -->
+  <div class="card fade-in hidden" id="step-info">
+    <div class="section-label">4 — Seus dados</div>
+    <label>Nome completo</label>
+    <input type="text" id="input-name" placeholder="Como prefere ser chamada?" />
+    <label>Telefone / WhatsApp</label>
+    <input type="tel" id="input-phone" placeholder="(11) 99999-9999" />
+    <button class="btn btn-primary" id="btn-confirm" onclick="submitBooking()">Confirmar agendamento</button>
+  </div>
+</div>
+
+<!-- success -->
+<div class="page hidden" id="success-page">
+  <div class="success">
+    <div class="emoji-big">✅</div>
+    <h2>Pedido enviado!</h2>
+    <p>Sua solicitação foi registrada.<br>O estabelecimento vai confirmar pelo WhatsApp em breve.</p>
+    <div class="detail" id="success-detail"></div>
+    <button class="btn btn-primary" onclick="resetForm()">Fazer outro agendamento</button>
+  </div>
+</div>
+
+<script>
+const HOURS = ['08:00','08:30','09:00','09:30','10:00','10:30','11:00','11:30',
+               '12:00','12:30','13:00','13:30','14:00','14:30','15:00','15:30',
+               '16:00','16:30','17:00','17:30','18:00'];
+
+const MONTHS = ['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
+const DEFAULT_SETTINGS = { businessName: 'AgendaHub', openingHour: '08:00', closingHour: '18:00', workingDays: [1,2,3,4,5,6], blockedDates: [] };
+
+function load(k, d) { try { return JSON.parse(localStorage.getItem(k)) || d; } catch { return d; } }
+function save(k, v) { localStorage.setItem(k, JSON.stringify(v)); }
+function getSettings() { return { ...DEFAULT_SETTINGS, ...load('settings', {}) }; }
+function getBusinessName() { return getSettings().businessName || 'AgendaHub'; }
+function getWorkingDays() { return getSettings().workingDays || DEFAULT_SETTINGS.workingDays; }
+function getBlockedDates() { return getSettings().blockedDates || []; }
+function isDateBlocked(dateStr) { return getBlockedDates().some(item => item.date === dateStr); }
+function getAvailableHoursForDate(dateStr) {
+  const settings = getSettings();
+  const [y, m, d] = dateStr.split('-').map(Number);
+  const date = new Date(y, m - 1, d);
+  const day = date.getDay();
+  if (!getWorkingDays().includes(day)) return [];
+  const opening = parseInt(settings.openingHour.split(':')[0], 10) * 60 + parseInt(settings.openingHour.split(':')[1], 10);
+  const closing = parseInt(settings.closingHour.split(':')[0], 10) * 60 + parseInt(settings.closingHour.split(':')[1], 10);
+  return HOURS.filter(h => {
+    const [hh, mm] = h.split(':').map(Number);
+    const mins = hh * 60 + mm;
+    return mins >= opening && mins <= closing;
+  });
+}
+
+const defaultServices = [];
+let appState = { settings: DEFAULT_SETTINGS, services: [], apts: [] };
+
+let sel = { services: [], date: '', time: '' };
+
+async function fetchPublicState() {
+  try {
+    const res = await fetch('/api/public/state');
+    if (!res.ok) throw new Error('Falha ao carregar dados');
+    const data = await res.json();
+    appState.settings = { ...DEFAULT_SETTINGS, ...(data.settings || {}) };
+    appState.services = data.services || [];
+    appState.apts = data.apts || [];
+  } catch (err) {
+    appState = { settings: DEFAULT_SETTINGS, services: [], apts: [] };
+    alert('Erro ao carregar os serviços. Verifique se o servidor está rodando.');
+  }
+}
+
+function getServices() { return appState.services || []; }
+function getAppointments() { return appState.apts || []; }
+
+function show(id) { document.getElementById(id).classList.remove('hidden'); }
+function hide(id) { document.getElementById(id).classList.add('hidden'); }
+
+// Render services
+function renderServices() {
+  const list = document.getElementById('service-list');
+  const services = getServices();
+  if (!services.length) {
+    list.innerHTML = '<div style="color: #64748b; font-size: 14px;">Nenhum serviço disponível. Entre em contato com o estabelecimento para cadastrar.</div>';
+    hide('step-date');
+    hide('step-time');
+    hide('step-info');
+    return;
+  }
+  list.innerHTML = services.map(s => `
+    <div class="service-opt ${sel.services.includes(s.id) ? 'selected' : ''}" onclick="toggleService(${s.id})">
+      <span class="svc-name">${s.name}</span>
+      <span class="svc-info">R$ ${s.price} · ${s.duration}min</span>
+    </div>
+  `).join('');
+}
+
+function toggleService(id) {
+  const idx = sel.services.indexOf(id);
+  if (idx === -1) {
+    sel.services.push(id);
+  } else {
+    sel.services.splice(idx, 1);
+  }
+  if (!sel.services.length) {
+    sel.date = '';
+    sel.time = '';
+    document.getElementById('input-date').value = '';
+    hide('step-date');
+    hide('step-time');
+    hide('step-info');
+  } else {
+    renderTimes();
+    show('step-date');
+    hide('step-time');
+    hide('step-info');
+    const today = new Date().toISOString().slice(0, 10);
+    document.getElementById('input-date').min = today;
+  }
+  renderServices();
+}
+
+document.getElementById('input-date').addEventListener('change', function() {
+  sel.date = this.value;
+  sel.time = '';
+  if (sel.date) {
+    if (isDateBlocked(sel.date)) {
+      document.getElementById('time-list').innerHTML = '<div style="grid-column: 1 / -1; color: #c47bb5; font-size: 13px;">Esta data está bloqueada para agendamentos.</div>';
+      hide('step-info');
+      show('step-time');
+      return;
+    }
+    const availableHours = getAvailableHoursForDate(sel.date);
+    if (!availableHours.length) {
+      document.getElementById('time-list').innerHTML = '<div style="grid-column: 1 / -1; color: #c47bb5; font-size: 13px;">Este dia não está disponível de acordo com o horário de atendimento configurado.</div>';
+      hide('step-info');
+      show('step-time');
+      return;
+    }
+    renderTimes();
+    show('step-time');
+    hide('step-info');
+  }
+});
+
+function renderTimes() {
+  const taken = getAppointments().filter(a => a.date === sel.date).map(a => a.time);
+  const availableHours = getAvailableHoursForDate(sel.date);
+  document.getElementById('time-list').innerHTML = availableHours.map(h => `
+    <div class="time-opt ${taken.includes(h) ? 'taken' : ''} ${sel.time === h ? 'selected' : ''}" onclick="pickTime('${h}')">
+      ${h}
+    </div>
+  `).join('');
+}
+
+function pickTime(t) {
+  sel.time = t;
+  renderTimes();
+  show('step-info');
+}
+
+async function submitBooking() {
+  const name = document.getElementById('input-name').value.trim();
+  const phone = document.getElementById('input-phone').value.trim();
+  if (!name) { alert('Digite seu nome.'); return; }
+  if (!phone) { alert('Digite seu telefone.'); return; }
+  if (!sel.services.length) { alert('Selecione ao menos um serviço.'); return; }
+
+  const services = getServices();
+  const selectedServices = services.filter(s => sel.services.includes(s.id));
+  const totalPrice = selectedServices.reduce((sum, s) => sum + s.price, 0);
+  const serviceNames = selectedServices.map(s => s.name).join(', ');
+
+  try {
+    const res = await fetch('/api/public/book', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name,
+        phone,
+        serviceIds: sel.services,
+        date: sel.date,
+        time: sel.time
+      })
+    });
+    const result = await res.json();
+    if (!res.ok) throw new Error(result.error || 'Erro ao salvar agendamento');
+    appState.apts.push(result.appointment);
+
+    const [y, m, d] = sel.date.split('-');
+    document.getElementById('success-detail').innerHTML = `
+      <p>📌 <strong>${serviceNames}</strong></p>
+      <p>📅 ${d} de ${MONTHS[parseInt(m)-1]} de ${y} às ${sel.time}</p>
+      <p>👤 ${name}</p>
+      <p>💰 R$ ${totalPrice}</p>
+    `;
+    hide('main');
+    show('success-page');
+  } catch (err) {
+    alert(err.message || 'Falha ao enviar o agendamento.');
+  }
+}
+
+function resetForm() {
+  sel = { services: [], date: '', time: '' };
+  hide('step-date'); hide('step-time'); hide('step-info');
+  document.getElementById('input-date').value = '';
+  document.getElementById('input-name').value = '';
+  document.getElementById('input-phone').value = '';
+  renderServices();
+  hide('success-page');
+  show('main');
+}
+
+function toggleTheme() {
+  const root = document.documentElement;
+  const isDark = root.getAttribute('data-theme') === 'dark';
+  const nextTheme = isDark ? 'light' : 'dark';
+  root.setAttribute('data-theme', nextTheme);
+  localStorage.setItem('agendahub-theme', nextTheme);
+  document.getElementById('themeToggle').textContent = nextTheme === 'dark' ? '☀️' : '🌙';
+}
+
+async function initPage() {
+  await fetchPublicState();
+  document.querySelector('.header h1').textContent = getBusinessName();
+  renderServices();
+  const savedTheme = localStorage.getItem('agendahub-theme') || 'light';
+  document.documentElement.setAttribute('data-theme', savedTheme);
+  document.getElementById('themeToggle').textContent = savedTheme === 'dark' ? '☀️' : '🌙';
+  localStorage.setItem('agendahub-theme', savedTheme);
+}
+
+initPage();
+</script>
+</body>
+</html>

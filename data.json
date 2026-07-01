@@ -1,0 +1,14 @@
+{
+  "adminPassHash": null,
+  "adminToken": null,
+  "services": [],
+  "apts": [],
+  "clients": [],
+  "settings": {
+    "businessName": "AgendaHub",
+    "openingHour": "08:00",
+    "closingHour": "18:00",
+    "workingDays": [1,2,3,4,5,6],
+    "blockedDates": []
+  }
+}

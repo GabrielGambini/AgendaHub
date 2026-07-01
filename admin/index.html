@@ -1,0 +1,840 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/site.webmanifest">
+<title>Painel — AgendaHub</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #f8fafc;
+    --surface: #ffffff;
+    --surface-alt: #f1f5f9;
+    --text: #0f172a;
+    --muted: #64748b;
+    --border: #e2e8f0;
+    --primary: #475569;
+    --primary-hover: #334155;
+    --shadow: 0 12px 35px rgba(15, 23, 42, 0.06);
+  }
+
+  :root[data-theme="dark"] {
+    --bg: #0f172a;
+    --surface: #111827;
+    --surface-alt: #1f2937;
+    --text: #f8fafc;
+    --muted: #cbd5e1;
+    --border: #334155;
+    --primary: #60a5fa;
+    --primary-hover: #93c5fd;
+    --shadow: 0 12px 35px rgba(2, 6, 23, 0.45);
+  }
+
+  body { font-family: Inter, 'Segoe UI', Roboto, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+  /* Login */
+  .login-wrap { display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: 1rem; }
+  .login-card { background: var(--surface); border: 0.5px solid var(--border); border-radius: 16px; padding: 2.5rem; width: 100%; max-width: 360px; box-shadow: var(--shadow); }
+  .login-logo { text-align: center; margin-bottom: 2rem; }
+  .login-logo img { width: auto; max-width: 260px; max-height: 180px; margin-bottom: 0.85rem; }
+  .login-logo h1 { font-size: 20px; font-weight: 600; margin-top: 0.5rem; }
+  .login-logo p { font-size: 13px; color: #64748b; margin-top: 4px; }
+  .login-intro { font-size: 14px; color: #475569; margin-bottom: 1.25rem; line-height: 1.5; }
+  .logo-row { display: flex; align-items: center; gap: 10px; }
+  .brand-logo-sm { width: 48px; height: auto; display: inline-block; }
+  .error { font-size: 13px; color: #c0392b; margin-top: 8px; }
+
+  label { font-size: 13px; color: #64748b; display: block; margin-bottom: 4px; margin-top: 12px; }
+  input, select, textarea { width: 100%; padding: 9px 12px; border: 0.5px solid var(--border); border-radius: 8px; font-size: 14px; background: var(--surface-alt); color: var(--text); font-family: inherit; }
+  input:focus, select:focus, textarea:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(71,85,105,0.14); }
+  textarea { resize: vertical; min-height: 72px; }
+
+  /* Buttons */
+  .btn { padding: 9px 16px; border-radius: 8px; font-size: 14px; font-weight: 500; cursor: pointer; border: 0.5px solid; transition: all 0.12s; font-family: inherit; }
+  .btn-primary { background: var(--primary); color: #fff; border-color: var(--primary); }
+  .btn-primary:hover { background: var(--primary-hover); }
+  .btn-ghost { background: transparent; color: #64748b; border-color: #cbd5e1; }
+  .btn-ghost:hover { background: var(--surface); }
+  .btn-danger { background: transparent; color: #c0392b; border-color: #e57373; font-size: 12px; padding: 4px 10px; }
+  .btn-danger:hover { background: rgba(192, 57, 43, 0.08); }
+  .btn-full { width: 100%; margin-top: 1.25rem; padding: 11px; font-size: 15px; }
+  .btn-sm { padding: 5px 12px; font-size: 13px; }
+
+  /* Layout */
+  .app { display: flex; min-height: 100vh; }
+  .sidebar { width: 210px; background: var(--surface); border-right: 0.5px solid var(--border); padding: 1.25rem 0; flex-shrink: 0; display: flex; flex-direction: column; }
+  .sidebar-logo { padding: 0 1.25rem 1.25rem; border-bottom: 0.5px solid var(--border); margin-bottom: 0.75rem; }
+  .sidebar-logo span { font-size: 16px; font-weight: 600; }
+  .sidebar-logo small { display: block; font-size: 12px; color: #64748b; }
+  .nav-item { display: flex; align-items: center; gap: 10px; padding: 10px 1.25rem; font-size: 14px; cursor: pointer; color: #64748b; border-left: 3px solid transparent; transition: all 0.1s; }
+  .nav-item:hover { background: var(--surface); color: var(--text); }
+  .nav-item.active { color: var(--primary); border-left-color: var(--primary); background: rgba(71,85,105,0.08); }
+  .sidebar-bottom { margin-top: auto; padding: 1rem 1.25rem; border-top: 0.5px solid #e2e8f0; display: flex; flex-direction: column; gap: 6px; }
+
+  .main { flex: 1; overflow-y: auto; padding: 1.5rem 2rem; }
+  .page-header { margin-bottom: 1.5rem; }
+  .page-header h2 { font-size: 20px; font-weight: 600; }
+  .page-header p { font-size: 13px; color: #64748b; margin-top: 3px; }
+
+  .card { background: var(--surface); border: 0.5px solid var(--border); border-radius: 12px; padding: 1.25rem; box-shadow: var(--shadow); }
+
+  /* Metrics */
+  .metric-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; margin-bottom: 1.5rem; }
+  .metric { background: var(--surface); border-radius: 10px; padding: 1rem; }
+  .metric .lbl { font-size: 12px; color: #64748b; margin-bottom: 6px; }
+  .metric .val { font-size: 22px; font-weight: 600; }
+  .metric .sub { font-size: 12px; color: #94a3b8; margin-top: 2px; }
+
+  /* Calendar */
+  .cal-nav { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; }
+  .cal-nav h3 { font-size: 15px; font-weight: 600; }
+  .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 3px; }
+  .cal-dh { text-align: center; font-size: 11px; color: #94a3b8; padding: 5px 0; font-weight: 500; }
+  .cal-day { min-height: 62px; border-radius: 8px; border: 0.5px solid var(--border); padding: 5px; cursor: pointer; background: var(--surface); transition: border-color 0.1s; }
+  .cal-day:hover { border-color: #475569; }
+  .cal-day.today { border-color: #475569; }
+  .cal-day.selected { background: rgba(71,85,105,0.08); border-color: #475569; }
+  .cal-day.other { opacity: 0.3; cursor: default; }
+  .cal-day .dn { font-size: 11px; font-weight: 500; margin-bottom: 3px; }
+  .cal-day.today .dn { color: #475569; }
+  .cal-apt-dot { font-size: 10px; background: #475569; color: #fff; border-radius: 3px; padding: 1px 4px; margin-bottom: 2px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+
+  /* Day list */
+  .apt-item { background: rgba(71,85,105,0.08); border: 0.5px solid rgba(71,85,105,0.18); border-radius: 8px; padding: 10px 12px; margin-bottom: 6px; }
+  .apt-item .apt-time { font-weight: 600; font-size: 13px; }
+  .apt-item .apt-client { font-size: 14px; font-weight: 500; }
+  .apt-item .apt-detail { font-size: 12px; color: #64748b; margin-top: 2px; }
+  .apt-item .apt-price { font-size: 13px; color: #475569; font-weight: 600; }
+  .apt-row { display: flex; justify-content: space-between; align-items: flex-start; }
+
+  /* Lists */
+  .list-row { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 0.5px solid var(--border); }
+  .list-row:last-child { border-bottom: none; }
+  .avatar { width: 36px; height: 36px; border-radius: 50%; background: rgba(71,85,105,0.12); display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 600; color: #475569; flex-shrink: 0; }
+  .list-info { flex: 1; min-width: 0; }
+  .list-info strong { font-size: 14px; font-weight: 500; display: block; }
+  .list-info small { font-size: 12px; color: #64748b; }
+  .list-actions { display: flex; gap: 6px; }
+
+  /* Badge */
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 20px; font-size: 11px; font-weight: 500; }
+  .badge-pink { background: rgba(71,85,105,0.12); color: #475569; }
+
+  /* Modal */
+  .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.35); display: flex; align-items: center; justify-content: center; z-index: 100; padding: 1rem; }
+  .modal { background: var(--surface); border-radius: 16px; padding: 1.5rem; width: 100%; max-width: 420px; max-height: 90vh; overflow-y: auto; }
+  .modal-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.25rem; }
+  .modal-head h3 { font-size: 16px; font-weight: 600; }
+  .modal-foot { display: flex; gap: 8px; justify-content: flex-end; margin-top: 1.25rem; }
+
+  /* Chart bars */
+  .bar-wrap { display: flex; align-items: flex-end; gap: 8px; height: 110px; }
+  .bar-col { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+  .bar-val { font-size: 10px; color: #475569; font-weight: 500; min-height: 14px; }
+  .bar-track { flex: 1; width: 100%; background: rgba(71,85,105,0.1); border-radius: 4px 4px 0 0; display: flex; align-items: flex-end; }
+  .bar-fill { width: 100%; background: #475569; border-radius: 4px 4px 0 0; transition: height 0.3s; }
+  .bar-lbl { font-size: 10px; color: #94a3b8; }
+
+  .section-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: #475569; margin-bottom: 0.75rem; }
+  .mt-1 { margin-top: 0.5rem; }
+  .mt-2 { margin-top: 1rem; }
+  .gap-12 { gap: 12px; }
+  .theme-toggle { position: fixed; top: 16px; right: 16px; z-index: 20; border: none; background: var(--surface); color: var(--text); border-radius: 999px; padding: 8px 10px; box-shadow: var(--shadow); cursor: pointer; }
+  .hidden { display: none; }
+  .empty { text-align: center; color: var(--muted); font-size: 13px; padding: 2rem 0; }
+  @media (max-width: 900px) {
+    .app { flex-direction: column; }
+    .sidebar { width: 100%; border-right: none; border-bottom: 0.5px solid var(--border); }
+    .main { padding: 1rem; }
+    .nav-item { padding: 12px 1rem; }
+  }
+  @media (max-width: 640px) {
+    .login-card { padding: 1.75rem; }
+    .sidebar { padding: 1rem; }
+    .main { padding: 1rem; }
+  }
+</style>
+</head>
+<body>
+<button class="theme-toggle" onclick="toggleTheme()" id="themeToggle">🌙</button>
+
+<!-- LOGIN -->
+<div id="login-view">
+  <div class="login-wrap">
+    <div class="login-card">
+      <div class="login-logo">
+        <img src="/agenda-logo.png" alt="AgendaHub" />
+        <p>Painel administrativo</p>
+      </div>
+      <div id="login-intro" class="login-intro">Digite uma senha para criar sua conta de administrador.</div>
+      <label id="pw-label">Senha</label>
+      <input type="password" id="pw" placeholder="Digite sua senha" onkeydown="if(event.key==='Enter')doLogin()" />
+      <div id="confirm-group" class="hidden">
+        <label>Confirme a senha</label>
+        <input type="password" id="pw-confirm" placeholder="Digite novamente" onkeydown="if(event.key==='Enter')doLogin()" />
+      </div>
+      <div id="pw-err" class="error hidden"></div>
+      <button class="btn btn-primary btn-full" id="login-btn" onclick="doLogin()">Criar conta</button>
+    </div>
+  </div>
+</div>
+
+<!-- ADMIN -->
+<div id="admin-view" class="hidden">
+  <div class="app">
+    <div class="sidebar">
+      <div class="sidebar-logo">
+        <div class="logo-row">
+          <img src="/agenda-logo.png" alt="AgendaHub" class="brand-logo-sm" />
+          <div>
+            <span>AgendaHub</span>
+            <small>Painel do estabelecimento</small>
+          </div>
+        </div>
+      </div>
+      <div class="nav-item active" id="nav-agenda" onclick="setPage('agenda')">📅 Agenda</div>
+      <div class="nav-item" id="nav-clientes" onclick="setPage('clientes')">👥 Clientes</div>
+      <div class="nav-item" id="nav-servicos" onclick="setPage('servicos')">✨ Serviços</div>
+      <div class="nav-item" id="nav-disponibilidade" onclick="setPage('disponibilidade')">🛡️ Disponibilidade</div>
+      <div class="nav-item" id="nav-relatorios" onclick="setPage('relatorios')">📊 Relatórios</div>
+      <div class="sidebar-bottom">
+        <button class="btn btn-ghost btn-sm" onclick="copyLink()">📋 Link para clientes</button>
+        <button class="btn btn-ghost btn-sm" onclick="doLogout()">Sair</button>
+      </div>
+    </div>
+    <div class="main" id="main-content"></div>
+  </div>
+</div>
+
+<!-- MODAL -->
+<div id="modal" class="overlay hidden" onclick="overlayClick(event)">
+  <div class="modal" id="modal-body"></div>
+</div>
+
+<script>
+const HOURS = ['08:00','08:30','09:00','09:30','10:00','10:30','11:00','11:30',
+               '12:00','12:30','13:00','13:30','14:00','14:30','15:00','15:30',
+               '16:00','16:30','17:00','17:30','18:00'];
+const MONTHS = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+const WDAYS = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
+const DEFAULT_SETTINGS = { businessName: 'AgendaHub', openingHour: '08:00', closingHour: '18:00', workingDays: [1,2,3,4,5,6], blockedDates: [] };
+
+let adminToken = localStorage.getItem('admin-token');
+let backendState = { settings: DEFAULT_SETTINGS, services: [], apts: [], clients: [] };
+let hasAccount = false;
+let adminLoaded = false;
+
+async function apiRequest(path, options = {}) {
+  const headers = options.headers || {};
+  headers['Content-Type'] = 'application/json';
+  if (adminToken) headers['Authorization'] = 'Bearer ' + adminToken;
+  const res = await fetch(path, { credentials: 'same-origin', ...options, headers });
+  return res;
+}
+
+async function fetchAuthStatus() {
+  try {
+    const res = await apiRequest('/api/auth/status', { method: 'GET' });
+    if (!res.ok) return false;
+    const data = await res.json();
+    hasAccount = !!data.hasAccount;
+    return hasAccount;
+  } catch {
+    hasAccount = false;
+    return false;
+  }
+}
+
+async function fetchAdminState() {
+  if (!adminToken) return false;
+  try {
+    const res = await apiRequest('/api/admin/state', { method: 'GET' });
+    if (!res.ok) {
+      adminToken = null;
+      localStorage.removeItem('admin-token');
+      return false;
+    }
+    const data = await res.json();
+    backendState.settings = { ...DEFAULT_SETTINGS, ...(data.settings || {}) };
+    backendState.services = data.services || [];
+    backendState.apts = data.apts || [];
+    backendState.clients = data.clients || [];
+    adminLoaded = true;
+    return true;
+  } catch {
+    adminToken = null;
+    localStorage.removeItem('admin-token');
+    return false;
+  }
+}
+
+function load(k, d) {
+  if (adminToken && adminLoaded) {
+    if (k === 'settings') return backendState.settings;
+    if (k === 'services') return backendState.services;
+    if (k === 'apts') return backendState.apts;
+    if (k === 'clients') return backendState.clients;
+  }
+  try { return JSON.parse(localStorage.getItem(k)) || d; } catch { return d; }
+}
+
+function save(k, v) {
+  localStorage.setItem(k, JSON.stringify(v));
+  if (adminToken) {
+    backendState[k] = v;
+    apiRequest('/api/admin/data', {
+      method: 'POST',
+      body: JSON.stringify({ key: k, value: v })
+    }).catch(() => {
+      console.warn('Falha ao salvar no servidor.');
+    });
+  }
+}
+
+function getSettings() { return { ...DEFAULT_SETTINGS, ...load('settings', {}) }; }
+function saveSettings(v) { save('settings', v); }
+function getBlockedDates() { return getSettings().blockedDates || []; }
+function getWorkingDays() { return getSettings().workingDays || DEFAULT_SETTINGS.workingDays; }
+function renderLoginView() {
+  document.getElementById('login-intro').textContent = hasAccount
+    ? 'Digite sua senha para acessar o painel.'
+    : 'Crie sua senha de administrador para acessar o painel.';
+  document.getElementById('confirm-group').classList.toggle('hidden', hasAccount);
+  document.getElementById('login-btn').textContent = hasAccount ? 'Entrar' : 'Criar conta';
+  document.getElementById('pw-err').classList.add('hidden');
+}
+
+const defaultServices = [];
+
+let page = 'agenda';
+let selDate = new Date().toISOString().slice(0, 10);
+let calM = new Date().getMonth();
+let calY = new Date().getFullYear();
+let clientSearch = '';
+
+function initials(n) { return n.split(' ').slice(0,2).map(w=>w[0]).join('').toUpperCase(); }
+function fmtDate(d) { const [y,m,day]=d.split('-'); return `${day}/${m}/${y}`; }
+function daysInM(y,m) { return new Date(y,m+1,0).getDate(); }
+function firstDay(y,m) { return new Date(y,m,1).getDay(); }
+function apts() { return load('apts', []); }
+function clients() { return load('clients', []); }
+function services() { return load('services', defaultServices); }
+function aptsForDate(d) { return apts().filter(a=>a.date===d); }
+
+// Auth
+async function doLogin() {
+  const val = document.getElementById('pw').value.trim();
+  if (!val) {
+    showLoginError('Digite sua senha.');
+    return;
+  }
+  if (!hasAccount) {
+    const confirm = document.getElementById('pw-confirm').value.trim();
+    if (!confirm) {
+      showLoginError('Confirme sua senha.');
+      return;
+    }
+    if (val !== confirm) {
+      showLoginError('As senhas não coincidem.');
+      return;
+    }
+    const res = await apiRequest('/api/auth/register', {
+      method: 'POST',
+      body: JSON.stringify({ password: val })
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      showLoginError(data.error || 'Falha ao criar conta.');
+      return;
+    }
+    adminToken = data.token;
+    localStorage.setItem('admin-token', adminToken);
+    hasAccount = true;
+    renderLoginView();
+    alert('Conta criada com sucesso! Agora faça login com a senha criada.');
+    return;
+  }
+
+  const res = await apiRequest('/api/auth/login', {
+    method: 'POST',
+    body: JSON.stringify({ password: val })
+  });
+  const data = await res.json();
+  if (!res.ok) {
+    showLoginError(data.error || 'Senha incorreta.');
+    return;
+  }
+  adminToken = data.token;
+  localStorage.setItem('admin-token', adminToken);
+  const loaded = await fetchAdminState();
+  if (!loaded) {
+    showLoginError('Não foi possível carregar os dados do servidor.');
+    return;
+  }
+  document.getElementById('login-view').classList.add('hidden');
+  document.getElementById('admin-view').classList.remove('hidden');
+  const savedTheme = localStorage.getItem('agendahub-theme') || 'light';
+  document.documentElement.setAttribute('data-theme', savedTheme);
+  document.getElementById('themeToggle').textContent = savedTheme === 'dark' ? '☀️' : '🌙';
+  renderPage();
+}
+function doLogout() {
+  document.getElementById('admin-view').classList.add('hidden');
+  document.getElementById('login-view').classList.remove('hidden');
+  document.getElementById('pw').value = '';
+  document.getElementById('pw-confirm').value = '';
+  document.getElementById('pw-err').classList.add('hidden');
+  renderLoginView();
+}
+function showLoginError(message) {
+  const err = document.getElementById('pw-err');
+  err.textContent = message;
+  err.classList.remove('hidden');
+}
+
+function setPage(p) {
+  page = p;
+  document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+  document.getElementById('nav-' + p).classList.add('active');
+  renderPage();
+}
+
+function toggleTheme() {
+  const root = document.documentElement;
+  const isDark = root.getAttribute('data-theme') === 'dark';
+  const nextTheme = isDark ? 'light' : 'dark';
+  root.setAttribute('data-theme', nextTheme);
+  localStorage.setItem('agendahub-theme', nextTheme);
+  document.getElementById('themeToggle').textContent = nextTheme === 'dark' ? '☀️' : '🌙';
+}
+
+function renderPage() {
+  const main = document.getElementById('main-content');
+  if (page === 'agenda') main.innerHTML = renderAgenda();
+  else if (page === 'clientes') main.innerHTML = renderClientes();
+  else if (page === 'servicos') main.innerHTML = renderServicos();
+  else if (page === 'disponibilidade') main.innerHTML = renderDisponibilidade();
+  else if (page === 'relatorios') main.innerHTML = renderRelatorios();
+}
+
+async function initAdmin() {
+  await fetchAuthStatus();
+  renderLoginView();
+}
+
+initAdmin();
+
+// ── AGENDA ──────────────────────────────────────────────
+function renderAgenda() {
+  const today = new Date().toISOString().slice(0,10);
+  const fd = firstDay(calY, calM);
+  const total = daysInM(calY, calM);
+  const prev = daysInM(calY, calM-1);
+
+  let cells = [];
+  for (let i=fd-1; i>=0; i--) cells.push({day:prev-i, cur:false});
+  for (let d=1; d<=total; d++) cells.push({day:d, cur:true});
+  while (cells.length%7!==0) cells.push({day:cells.length-total-fd+1, cur:false});
+
+  const calHTML = cells.map(({day,cur})=>{
+    const ds = cur ? `${calY}-${String(calM+1).padStart(2,'0')}-${String(day).padStart(2,'0')}` : null;
+    const da = ds ? aptsForDate(ds) : [];
+    const isToday = ds===today, isSel = ds===selDate;
+    return `<div class="cal-day ${!cur?'other':''} ${isToday?'today':''} ${isSel?'selected':''}" ${ds?`onclick="pickDate('${ds}')"`:''}>
+      <div class="dn">${day}</div>
+      ${da.slice(0,2).map(a=>`<div class="cal-apt-dot">${a.time}</div>`).join('')}
+      ${da.length>2?`<div style="font-size:10px;color:#c47bb5">+${da.length-2}</div>`:''}
+    </div>`;
+  }).join('');
+
+  const dayApts = aptsForDate(selDate).sort((a,b)=>a.time.localeCompare(b.time));
+
+  return `
+  <div class="page-header"><h2>Agenda</h2><p>Gerencie seus agendamentos</p></div>
+  <div style="display:grid;grid-template-columns:1fr 290px;gap:1.5rem;align-items:start">
+    <div class="card">
+      <div class="cal-nav">
+        <button class="btn btn-ghost btn-sm" onclick="prevM()">←</button>
+        <h3>${MONTHS[calM]} ${calY}</h3>
+        <button class="btn btn-ghost btn-sm" onclick="nextM()">→</button>
+      </div>
+      <div class="cal-grid">
+        ${WDAYS.map(d=>`<div class="cal-dh">${d}</div>`).join('')}
+        ${calHTML}
+      </div>
+    </div>
+    <div>
+      <div class="card">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem">
+          <strong style="font-size:13px">${fmtDate(selDate)}</strong>
+          <button class="btn btn-primary btn-sm" onclick="openApt()">+ Agendar</button>
+        </div>
+        ${dayApts.length===0
+          ? `<div class="empty">Nenhum agendamento</div>`
+          : dayApts.map(a=>`
+            <div class="apt-item">
+              <div class="apt-row">
+                <div>
+                  <div class="apt-time">${a.time}</div>
+                  <div class="apt-client">${a.client}</div>
+                  <div class="apt-detail">${a.service}</div>
+                </div>
+                <div style="text-align:right">
+                  <div class="apt-price">R$ ${a.price}</div>
+                  <button class="btn btn-danger mt-1" onclick="delApt('${a.id}')">Remover</button>
+                </div>
+              </div>
+            </div>
+          `).join('')}
+      </div>
+    </div>
+  </div>`;
+}
+
+function pickDate(d) { selDate = d; renderPage(); }
+function prevM() { calM--; if(calM<0){calM=11;calY--;} renderPage(); }
+function nextM() { calM++; if(calM>11){calM=0;calY++;} renderPage(); }
+
+function delApt(id) {
+  if(!confirm('Remover agendamento?')) return;
+  save('apts', apts().filter(a=>a.id!==id));
+  renderPage();
+}
+
+// ── CLIENTES ──────────────────────────────────────────────
+function renderClientes() {
+  const all = clients();
+  const q = clientSearch.toLowerCase();
+  const filtered = all.filter(c => c.name.toLowerCase().includes(q) || (c.phone||'').includes(q));
+  return `
+  <div class="page-header"><h2>Clientes</h2><p>${all.length} clientes cadastrados</p></div>
+  <div style="display:flex;gap:8px;margin-bottom:1rem">
+    <input style="flex:1" placeholder="Buscar por nome ou telefone..." value="${clientSearch}" oninput="clientSearch=this.value;renderPage()" />
+    <button class="btn btn-primary" onclick="openClient()">+ Novo</button>
+  </div>
+  <div class="card">
+    ${filtered.length===0
+      ? `<div class="empty">Nenhum cliente encontrado</div>`
+      : filtered.map(c=>{
+          const ca = apts().filter(a=>a.clientId===c.id);
+          const total = ca.reduce((s,a)=>s+(a.price||0),0);
+          return `<div class="list-row">
+            <div class="avatar">${initials(c.name)}</div>
+            <div class="list-info">
+              <strong>${c.name}</strong>
+              <small>${c.phone||'Sem telefone'} · ${ca.length} atend. · R$ ${total}</small>
+            </div>
+            <div class="list-actions">
+              <button class="btn btn-ghost btn-sm" onclick="openHistory('${c.id}')">Ver</button>
+              <button class="btn btn-danger" onclick="delClient('${c.id}')">✕</button>
+            </div>
+          </div>`;
+        }).join('')}
+  </div>`;
+}
+
+function delClient(id) {
+  if(!confirm('Remover cliente?')) return;
+  save('clients', clients().filter(c=>c.id!==id));
+  renderPage();
+}
+
+// ── SERVIÇOS ──────────────────────────────────────────────
+function renderServicos() {
+  const all = services();
+  return `
+  <div class="page-header"><h2>Serviços</h2><p>Configure serviços e preços</p></div>
+  <div style="text-align:right;margin-bottom:1rem">
+    <button class="btn btn-primary" onclick="openService()">+ Novo serviço</button>
+  </div>
+  <div class="card">
+    ${all.length === 0 ? '<div class="empty">Nenhum serviço cadastrado</div>' : all.map(s=>`
+      <div class="list-row">
+        <div class="list-info">
+          <strong>${s.name}</strong>
+          <small>${s.duration} minutos</small>
+        </div>
+        <span class="badge badge-pink" style="margin-right:8px">R$ ${s.price}</span>
+        <div class="list-actions">
+          <button class="btn btn-ghost btn-sm" onclick="openEditService(${s.id})">Editar</button>
+          <button class="btn btn-danger" onclick="delService(${s.id})">✕</button>
+        </div>
+      </div>
+    `).join('')}
+  </div>`;
+}
+
+function delService(id) {
+  if(!confirm('Remover serviço?')) return;
+  save('services', services().filter(s=>s.id!=id));
+  renderPage();
+}
+
+// ── RELATÓRIOS ──────────────────────────────────────────────
+function renderDisponibilidade() {
+  const settings = getSettings();
+  const blocked = getBlockedDates();
+  return `
+  <div class="page-header"><h2>Disponibilidade</h2><p>Defina o horário, os dias de atendimento e os bloqueios</p></div>
+  <div class="card">
+    <div class="section-label">Configuração do negócio</div>
+    <label>Nome do negócio</label>
+    <input type="text" id="cfg-name" value="${settings.businessName || 'AgendaHub'}" />
+    <label>Horário de abertura</label>
+    <input type="time" id="cfg-open" value="${settings.openingHour || '08:00'}" />
+    <label>Horário de fechamento</label>
+    <input type="time" id="cfg-close" value="${settings.closingHour || '18:00'}" />
+    <label>Dias de atendimento</label>
+    <div id="cfg-workdays" style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:8px">
+      ${WDAYS.map((label, idx) => `<label style="display:flex;align-items:center;gap:6px;font-size:13px;color:#777"><input type="checkbox" value="${idx}" ${getWorkingDays().includes(idx) ? 'checked' : ''}>${label}</label>`).join('')}
+    </div>
+    <div class="mt-2">
+      <button class="btn btn-primary" onclick="saveSettingsPage()">Salvar configuração</button>
+    </div>
+  </div>
+  <div class="card mt-2">
+    <div class="section-label">Bloqueios de datas</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr auto;gap:8px;align-items:end">
+      <div><label>Data</label><input type="date" id="blk-date" /></div>
+      <div><label>Motivo</label><input type="text" id="blk-reason" placeholder="Feriado, folga..." /></div>
+      <button class="btn btn-primary" onclick="addBlockedDate()">Adicionar</button>
+    </div>
+    ${blocked.length === 0 ? '<div class="empty">Nenhum bloqueio cadastrado</div>' : blocked.map((item, idx) => `
+      <div class="list-row">
+        <div class="list-info">
+          <strong>${fmtDate(item.date)}</strong>
+          <small>${item.reason || 'Sem motivo'}</small>
+        </div>
+        <button class="btn btn-danger" onclick="removeBlockedDate(${idx})">Remover</button>
+      </div>
+    `).join('')}
+  </div>`;
+}
+
+function saveSettingsPage() {
+  const settings = getSettings();
+  settings.businessName = document.getElementById('cfg-name').value.trim() || 'AgendaHub';
+  settings.openingHour = document.getElementById('cfg-open').value || '08:00';
+  settings.closingHour = document.getElementById('cfg-close').value || '18:00';
+  settings.workingDays = Array.from(document.querySelectorAll('#cfg-workdays input:checked')).map(el => parseInt(el.value, 10));
+  saveSettings(settings);
+  alert('Configuração salva.');
+  renderPage();
+}
+
+function addBlockedDate() {
+  const date = document.getElementById('blk-date').value;
+  const reason = document.getElementById('blk-reason').value.trim();
+  if (!date) return alert('Selecione uma data para bloquear.');
+  const settings = getSettings();
+  const blocked = getBlockedDates();
+  blocked.push({ date, reason });
+  settings.blockedDates = blocked;
+  saveSettings(settings);
+  document.getElementById('blk-date').value = '';
+  document.getElementById('blk-reason').value = '';
+  renderPage();
+}
+
+function removeBlockedDate(index) {
+  const settings = getSettings();
+  settings.blockedDates = getBlockedDates().filter((_, idx) => idx !== index);
+  saveSettings(settings);
+  renderPage();
+}
+
+function renderRelatorios() {
+  const now = new Date();
+  const thisM = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+  const all = apts();
+  const mApts = all.filter(a=>a.date.startsWith(thisM));
+  const totalM = mApts.reduce((s,a)=>s+(a.price||0),0);
+  const totalAll = all.reduce((s,a)=>s+(a.price||0),0);
+  const ticket = all.length ? Math.round(totalAll/all.length) : 0;
+
+  const months = [];
+  for(let i=5;i>=0;i--){
+    const d=new Date(now.getFullYear(),now.getMonth()-i,1);
+    const k=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+    const ma=all.filter(a=>a.date.startsWith(k));
+    months.push({lbl:MONTHS[d.getMonth()].slice(0,3),total:ma.reduce((s,a)=>s+(a.price||0),0),count:ma.length});
+  }
+  const maxVal=Math.max(...months.map(m=>m.total),1);
+
+  const bySvc={};
+  all.forEach(a=>{
+    bySvc[a.service]=bySvc[a.service]||{c:0,t:0};
+    bySvc[a.service].c++; bySvc[a.service].t+=(a.price||0);
+  });
+  const topSvc=Object.entries(bySvc).sort((a,b)=>b[1].c-a[1].c).slice(0,5);
+
+  return `
+  <div class="page-header"><h2>Relatórios</h2><p>Visão geral do negócio</p></div>
+  <div class="metric-grid">
+    <div class="metric"><div class="lbl">Este mês</div><div class="val" style="color:#c47bb5">R$ ${totalM}</div><div class="sub">${mApts.length} atend.</div></div>
+    <div class="metric"><div class="lbl">Total geral</div><div class="val">R$ ${totalAll}</div><div class="sub">${all.length} atend.</div></div>
+    <div class="metric"><div class="lbl">Clientes</div><div class="val">${clients().length}</div><div class="sub">cadastrados</div></div>
+    <div class="metric"><div class="lbl">Ticket médio</div><div class="val">R$ ${ticket}</div><div class="sub">por atend.</div></div>
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
+    <div class="card">
+      <div class="section-label">Faturamento — 6 meses</div>
+      <div class="bar-wrap">
+        ${months.map(m=>`
+          <div class="bar-col">
+            <div class="bar-val">${m.total>0?'R$'+m.total:''}</div>
+            <div class="bar-track"><div class="bar-fill" style="height:${Math.round((m.total/maxVal)*100)}%"></div></div>
+            <div class="bar-lbl">${m.lbl}</div>
+          </div>`).join('')}
+      </div>
+    </div>
+    <div class="card">
+      <div class="section-label">Serviços mais pedidos</div>
+      ${topSvc.length===0
+        ? `<div class="empty">Nenhum dado ainda</div>`
+        : topSvc.map(([n,d])=>`
+          <div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:0.5px solid #ecdde8;font-size:13px">
+            <span>${n}</span>
+            <span style="color:#999">${d.c}x · R$ ${d.t}</span>
+          </div>`).join('')}
+    </div>
+  </div>`;
+}
+
+// ── MODAIS ──────────────────────────────────────────────
+function openModal(html) {
+  document.getElementById('modal-body').innerHTML = html;
+  document.getElementById('modal').classList.remove('hidden');
+}
+function closeModal() { document.getElementById('modal').classList.add('hidden'); }
+function overlayClick(e) { if(e.target===e.currentTarget) closeModal(); }
+
+function openApt() {
+  const svcs = services();
+  const cls = clients();
+  openModal(`
+    <div class="modal-head"><h3>Novo agendamento</h3><button class="btn btn-ghost btn-sm" onclick="closeModal()">✕</button></div>
+    <label>Cliente</label>
+    <select id="m-cid">
+      <option value="">Selecione...</option>
+      ${cls.map(c=>`<option value="${c.id}">${c.name}</option>`).join('')}
+    </select>
+    <div style="margin-top:6px;font-size:12px;color:#c47bb5;cursor:pointer" onclick="openClient(true)">+ Cadastrar novo cliente</div>
+    <label>Serviço</label>
+    <select id="m-sid">${svcs.map(s=>`<option value="${s.id}">${s.name} — R$ ${s.price}</option>`).join('')}</select>
+    <label>Data</label>
+    <input type="date" id="m-date" value="${selDate}" />
+    <label>Horário</label>
+    <select id="m-time">${HOURS.map(h=>`<option>${h}</option>`).join('')}</select>
+    <label>Observações</label>
+    <textarea id="m-obs" placeholder="Cor, preferências..."></textarea>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" onclick="closeModal()">Cancelar</button>
+      <button class="btn btn-primary" onclick="saveApt()">Salvar</button>
+    </div>`);
+}
+
+function saveApt() {
+  const cid=document.getElementById('m-cid').value;
+  const sid=document.getElementById('m-sid').value;
+  const date=document.getElementById('m-date').value;
+  const time=document.getElementById('m-time').value;
+  const obs=document.getElementById('m-obs').value;
+  if(!cid||!date||!time) return alert('Preencha cliente, data e horário.');
+  const cl=clients().find(c=>c.id===cid);
+  const sv=services().find(s=>s.id==sid);
+  const all=apts();
+  all.push({id:Date.now().toString(),clientId:cid,client:cl.name,service:sv.name,price:sv.price,date,time,obs,status:'Pendente'});
+  save('apts',all);
+  selDate=date;
+  closeModal();
+  renderPage();
+}
+
+function openClient(fromApt=false) {
+  openModal(`
+    <div class="modal-head"><h3>Novo cliente</h3><button class="btn btn-ghost btn-sm" onclick="${fromApt?'openApt()':'closeModal()'}">✕</button></div>
+    <label>Nome</label>
+    <input type="text" id="m-name" placeholder="Nome completo" />
+    <label>Telefone / WhatsApp</label>
+    <input type="tel" id="m-phone" placeholder="(11) 99999-9999" />
+    <label>E-mail (opcional)</label>
+    <input type="email" id="m-email" placeholder="email@exemplo.com" />
+    <div class="modal-foot">
+      <button class="btn btn-ghost" onclick="${fromApt?'openApt()':'closeModal()'}">Cancelar</button>
+      <button class="btn btn-primary" onclick="saveClient()">Salvar</button>
+    </div>`);
+}
+
+function saveClient() {
+  const name=document.getElementById('m-name').value.trim();
+  const phone=document.getElementById('m-phone').value.trim();
+  const email=document.getElementById('m-email').value.trim();
+  if(!name) return alert('Digite o nome.');
+  const all=clients();
+  all.push({id:Date.now().toString(),name,phone,email});
+  save('clients',all);
+  closeModal();
+  renderPage();
+}
+
+function openService(id) {
+  const sv=id?services().find(s=>s.id==id):{};
+  openModal(`
+    <div class="modal-head"><h3>${id?'Editar':'Novo'} serviço</h3><button class="btn btn-ghost btn-sm" onclick="closeModal()">✕</button></div>
+    <label>Nome</label>
+    <input type="text" id="m-sname" value="${sv.name||''}" placeholder="Ex: Esmaltação simples" />
+    <label>Preço (R$)</label>
+    <input type="number" id="m-price" value="${sv.price||''}" placeholder="0" />
+    <label>Duração (minutos)</label>
+    <input type="number" id="m-dur" value="${sv.duration||60}" />
+    <div class="modal-foot">
+      <button class="btn btn-ghost" onclick="closeModal()">Cancelar</button>
+      <button class="btn btn-primary" onclick="saveService(${id||''})">Salvar</button>
+    </div>`);
+}
+function openEditService(id) { openService(id); }
+
+function saveService(existId) {
+  const name=document.getElementById('m-sname').value.trim();
+  const price=parseFloat(document.getElementById('m-price').value)||0;
+  const duration=parseInt(document.getElementById('m-dur').value)||60;
+  if(!name) return alert('Digite o nome.');
+  let all=services();
+  if(existId) all=all.map(s=>s.id==existId?{...s,name,price,duration}:s);
+  else all.push({id:Date.now(),name,price,duration});
+  save('services',all);
+  closeModal();
+  renderPage();
+}
+
+function openHistory(cid) {
+  const cl=clients().find(c=>c.id===cid);
+  const ca=apts().filter(a=>a.clientId===cid).sort((a,b)=>b.date.localeCompare(a.date));
+  const total=ca.reduce((s,a)=>s+(a.price||0),0);
+  openModal(`
+    <div class="modal-head"><h3>${cl.name}</h3><button class="btn btn-ghost btn-sm" onclick="closeModal()">✕</button></div>
+    <p style="font-size:13px;color:#888;margin-bottom:1rem">${ca.length} atendimento(s) · R$ ${total}</p>
+    ${ca.map(a=>`
+      <div class="list-row">
+        <div class="list-info">
+          <strong>${fmtDate(a.date)} às ${a.time}</strong>
+          <small>${a.service} · R$ ${a.price}</small>
+        </div>
+      </div>`).join('') || '<div class="empty">Sem histórico</div>'}
+    <div class="modal-foot"><button class="btn btn-ghost" onclick="closeModal()">Fechar</button></div>`);
+}
+
+function copyLink() {
+  const url = window.location.origin + '/';
+  navigator.clipboard.writeText(url).then(()=>alert('Link copiado! Mande para as clientes pelo WhatsApp:\n\n' + url));
+}
+
+renderLoginView();
+</script>
+</body>
+</html>
