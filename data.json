@@ -1,6 +1,6 @@
 {
-  "adminPassHash": null,
-  "adminToken": null,
+  "adminPassHash": "9cbb40f545059d3dc27511ccc7866bd40f2eceb1154da7b2e7477eb13141bef8",
+  "adminToken": "c1d33fd430893494ecadf0009533385e60c532f142d9467fb9c279a9ab6fc966",
   "services": [],
   "apts": [],
   "clients": [],
@@ -8,7 +8,14 @@
     "businessName": "AgendaHub",
     "openingHour": "08:00",
     "closingHour": "18:00",
-    "workingDays": [1,2,3,4,5,6],
+    "workingDays": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6
+    ],
     "blockedDates": []
   }
 }
